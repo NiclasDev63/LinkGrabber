@@ -4,4 +4,6 @@ This crawler uses Best First Search (BFS) Algortihm to track and follow all link
 
 It can be used to download the complete html code of a website for further analysis.
 
+This script can be used to download the complete html code of a website for further analysis.
+
 
