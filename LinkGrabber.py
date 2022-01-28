@@ -144,7 +144,10 @@ def randomHeader():
 
 
 #Downloads the HTML file into the wanted directory
-def htmlDownloader(html_doc, html_doc_name, directory):
+def htmlDownloader(directory, link):
+    html_doc = requests.get(link, headers = randomHeader()).text
+    soup = BeautifulSoup(html_doc, "html.parser")
+    html_doc_name = soup.title.string.strip()
 
     #List of characters you aren`t allowed to use in the file name on Windows OS
     forbidden_chars = ["<", ">", ":", "/", "|", "?" ,"*", ";", ",", "[", "]"]
@@ -157,7 +160,7 @@ def htmlDownloader(html_doc, html_doc_name, directory):
 
 """
 I often had problems with characters or letters
-in front of the URL, this function solves the problem.
+in front of the URL, this function takes care of the problem.
 """
 def linkCutter(href):
   try:
@@ -204,10 +207,6 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
               html_doc = requests.get(base + path, headers = randomHeader()).text
               soup = BeautifulSoup(html_doc, "html.parser")
 
-              if html_download:
-                  html_doc_name = soup.title.string
-                  htmlDownloader(soup.prettify(), html_doc_name, directory)
-
               for link in soup.find_all("a"):
                   href = linkCutter(link.get("href"))
                   if href not in visited:
@@ -234,14 +233,18 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
                       if href.startswith("http") or href.startswith("www"):
                         link_list.append(href)
                         print(str(" " * depth) + f" at deepth: {depth} URL: {href}")
+                        if html_download:
+                          htmlDownloader(directory, href)
                         if start_url not in href:
                           redirect_count += 1
                           redirect_list.append(href)
                           continue
                         queue.append([href, "", depth + 1])
                       else:
-                        link_list.append(base + href)
                         print(str(" " * depth) + f" at deepth: {depth} URL: {base + href}")
+                        if html_download:
+                          htmlDownloader(directory, base + href)
+                        link_list.append(base + href)
                         if start_url not in base + href:
                           redirect_count += 1
                           redirect_list.append(base + href)
@@ -249,7 +252,7 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
                         queue.append([base, href, depth + 1])
 
           except Exception as e:
-              #print(e)
+              print(e)
               pass
 
   important_data = {"listLength": len(link_list), "redirectCounter": redirect_count, "redirectLinks": redirect_list, "allLinks": link_list}
@@ -257,8 +260,9 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
   print(str(len(link_list)) + " links found")
   return important_data
 
-  
-#Driver code
+
+
+#Driver code 
 if __name__ == "__main__":
   print("#######################################################################")
   print("##                                                                   ##")
@@ -271,15 +275,17 @@ if __name__ == "__main__":
   print("##    #########    ###     ###      ###        ####        #         ##")
   print("##                                                                   ##")
   print("#######################################################################")
-  
-  start_url = input("Start URL: ")                                    #Insert an root url to start with
-  max_deepth = input("Maximum depth: ")                               #Insert an interger value
-  max_links = input("Maximum links: ")                                #Insert an integer value (If you insert a 0 the number of maximum links is unlimited)
-  get_link_to_files = input("Do you want to get links to files?: ")   #Insert True / Flase
-  html_download = input("Do you want to download the html file?: ")   #Insert True / Flase
-  directory = r"C:\Users\nicla\Desktop\Weibelfeld"                    #Insert the directory you want the html files in
+
+  #You have a few parameters to customize your link search
+
+  start_url = input("Start URL: ")                                          #Insert an root url to start with
+  max_deepth = int(input("Maximum depth: "))                                #Insert an interger value
+  max_links = int(input("Maximum links: "))                                 #Insert an integer value (If you insert a 0 the number of maximum links is unlimited)
+  get_link_to_files = bool(input("Do you want to get links to files?: "))   #Insert True / Flase
+  html_download = bool(input("Do you want to download the html file?: "))   #Insert True / Flase
+  directory = r"C:\Users\nicla\Desktop\Weibelfeld"                          #Insert the directory you want the html files in
 
   start = time.time()
   data_dic = breadthFirstSearch(start_url, max_deepth, max_links, html_download, directory, get_link_to_files)
   end = time.time()
-  print(f"Time needed to find the links: {end-start}")
+  print(f"Time needed to extract the links: {end-start} ")
