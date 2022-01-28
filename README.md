@@ -1,4 +1,4 @@
-# Link Grabber
+# LinkGrabber
 
 This crawler uses Best First Search (BFS) Algortihm to track and follow all links on a given webiste.
 
