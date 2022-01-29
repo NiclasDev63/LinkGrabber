@@ -180,9 +180,7 @@ def linkCutter(href):
 
 
 """
-Uses BFS to find all links on the Website.
-You can choose if you only want to find links directing to the Website itself
-or if you want to find ALL links (even they which are directing to another Website)
+Uses BFS to find all links on a given Website.
 """
 def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download = False, directory = "", get_link_to_files = False):
 
