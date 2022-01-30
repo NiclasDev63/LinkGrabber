@@ -281,7 +281,7 @@ if __name__ == "__main__":
   max_links = int(input("Maximum links: "))                                 #Insert an integer value (If you insert a 0 the number of maximum links is unlimited)
   get_link_to_files = bool(input("Do you want to get links to files?: "))   #Insert True / Flase
   html_download = bool(input("Do you want to download the html file?: "))   #Insert True / Flase
-  directory = r"C:\Users\nicla\Desktop\Weibelfeld"                          #Insert the directory you want the html files in
+  directory = r""                                                           #Insert the directory you want the html files in
 
   start = time.time()
   data_dic = breadthFirstSearch(start_url, max_deepth, max_links, html_download, directory, get_link_to_files)
