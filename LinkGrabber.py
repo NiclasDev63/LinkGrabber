@@ -145,46 +145,34 @@ def randomHeader():
 
 #Downloads the HTML file into the wanted directory
 def htmlDownloader(directory, link):
+  try:
     html_doc = requests.get(link, headers = randomHeader()).text
     soup = BeautifulSoup(html_doc, "html.parser")
     html_doc_name = soup.title.string.strip()
 
     #List of characters you aren`t allowed to use in the file name on Windows OS
-    forbidden_chars = ["<", ">", ":", "/", "|", "?" ,"*", ";", ",", "[", "]"]
+    forbidden_chars = ["<", ">", ":", "/", "|", "?" ,"*", ";", ",", "[", "]", "*", "+"]
+
     new_html_doc_name = html_doc_name
     for i in range(len(html_doc_name)):
         if html_doc_name[i] in forbidden_chars:
             new_html_doc_name = html_doc_name.replace(html_doc_name[i], "")
+    if "\n" in new_html_doc_name:
+            new_html_doc_name = new_html_doc_name.replace("\n", "")
     with open(directory + os.path.sep + new_html_doc_name + ".txt", "w", encoding="utf-8")as file:
         file.write(str(html_doc))
-
-"""
-I often had problems with characters or letters
-in front of the URL, this function takes care of the problem.
-"""
-def linkCutter(href):
-  try:
-    j = 0
-    if not href.startswith("w") or not href.startswith("h"):
-      for _ in range(len(href)):
-          if href[j] == "h":
-            break
-          elif href[j] == "w":
-            break
-          j += 1
-      return href[j:]
   except Exception as e:
-    #print(e)
-    return href
+    print("Html file could not be downloaded")
+    print(e)
 
 
 
 """
-Uses BFS to find all links on a given Website.
+Uses BFS to find all links on the Website.
 """
 def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download = False, directory = "", get_link_to_files = False):
 
-  redirect_count = 0
+
   redirect_list = []
   file_endings = ["jpg", "pdf", "JPG", "jpeg", "png", "mp3", "docx", "mp4"]
   visited = [[start_url]]
@@ -206,13 +194,13 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
               soup = BeautifulSoup(html_doc, "html.parser")
 
               for link in soup.find_all("a"):
-                  href = linkCutter(link.get("href"))
+                  href = link.get("href")
                   if href not in visited:
                       visited.append(href)
 
                       #This will skip the start url to prevent redundancy
                       if href == start_url:
-                        continue
+                         continue
 
                       if max_links == len(link_list) and want_all_links:
                           stop = True
@@ -230,22 +218,22 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
                       
                       if href.startswith("http") or href.startswith("www"):
                         link_list.append(href)
-                        print(str(" " * depth) + f" at deepth: {depth} URL: {href}")
+                        #print(str(" " * depth) + f" at deepth: {depth} URL: {href}")
                         if html_download:
                           htmlDownloader(directory, href)
                         if start_url not in href:
-                          redirect_count += 1
                           redirect_list.append(href)
                           continue
                         queue.append([href, "", depth + 1])
                       else:
-                        print(str(" " * depth) + f" at deepth: {depth} URL: {base + href}")
+                        #print(str(" " * depth) + f" at deepth: {depth} URL: {base + href}")               
                         if html_download:
                           htmlDownloader(directory, base + href)
                         link_list.append(base + href)
                         if start_url not in base + href:
-                          redirect_count += 1
                           redirect_list.append(base + href)
+                          print("AUFGERUFEN")
+                          print(base + href)
                           continue
                         queue.append([base, href, depth + 1])
 
@@ -253,10 +241,10 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
               print(e)
               pass
 
-  important_data = {"listLength": len(link_list), "redirectCounter": redirect_count, "redirectLinks": redirect_list, "allLinks": link_list}
+  relevant_data = {"listLength": len(link_list), "redirectCounter": len(redirect_list), "redirectLinks": redirect_list, "allLinks": link_list}
 
   print(str(len(link_list)) + " links found")
-  return important_data
+  return relevant_data
 
 
 
@@ -279,9 +267,21 @@ if __name__ == "__main__":
   start_url = input("Start URL: ")                                          #Insert an root url to start with
   max_deepth = int(input("Maximum depth: "))                                #Insert an interger value
   max_links = int(input("Maximum links: "))                                 #Insert an integer value (If you insert a 0 the number of maximum links is unlimited)
-  get_link_to_files = bool(input("Do you want to get links to files?: "))   #Insert True / Flase
-  html_download = bool(input("Do you want to download the html file?: "))   #Insert True / Flase
+  get_link_to_files = input("Do you want to get links to files?: ")         #Insert Yes / No
+  html_download = input("Do you want to download the html file?: ")         #Insert Yes / No
   directory = r""                                                           #Insert the directory you want the html files in
+
+
+  if get_link_to_files.lower() == "yes":
+    get_link_to_files = True
+  else:
+    get_link_to_files = False
+
+  if html_download.lower() == "yes":
+    html_download = True
+  else:
+    html_download = False
+
 
   start = time.time()
   data_dic = breadthFirstSearch(start_url, max_deepth, max_links, html_download, directory, get_link_to_files)
