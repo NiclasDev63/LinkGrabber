@@ -175,7 +175,7 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
 
   redirect_list = []
   file_endings = ["jpg", "pdf", "JPG", "jpeg", "png", "mp3", "docx", "mp4"]
-  visited = [[start_url]]
+  visited = [start_url]
   queue = deque([[start_url, "", 0]])
   want_all_links = False
   link_list = []
@@ -197,10 +197,6 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
                   href = link.get("href")
                   if href not in visited:
                       visited.append(href)
-
-                      #This will skip the start url to prevent redundancy
-                      if href == start_url:
-                         continue
 
                       if max_links == len(link_list) and want_all_links:
                           stop = True
