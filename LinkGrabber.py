@@ -218,7 +218,7 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
                       
                       if href.startswith("http") or href.startswith("www"):
                         link_list.append(href)
-                        #print(str(" " * depth) + f" at deepth: {depth} URL: {href}")
+                        print(str(" " * depth) + f" at deepth: {depth} URL: {href}")
                         if html_download:
                           htmlDownloader(directory, href)
                         if start_url not in href:
@@ -226,15 +226,10 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
                           continue
                         queue.append([href, "", depth + 1])
                       else:
-                        #print(str(" " * depth) + f" at deepth: {depth} URL: {base + href}")               
+                        print(str(" " * depth) + f" at deepth: {depth} URL: {base + href}")               
                         if html_download:
                           htmlDownloader(directory, base + href)
                         link_list.append(base + href)
-                        if start_url not in base + href:
-                          redirect_list.append(base + href)
-                          print("AUFGERUFEN")
-                          print(base + href)
-                          continue
                         queue.append([base, href, depth + 1])
 
           except Exception as e:
