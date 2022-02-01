@@ -1,9 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from collections import deque
-import time
 from random import choice
-from random import randint
 from os import path
 from pathvalidate import sanitize_filepath
 from threading import Thread
@@ -226,7 +224,7 @@ def breadthFirstSearch(start_url, threads, max_depth = 2, max_links = -1, html_d
     link_check_list = []
     for i in range(threads):
       thread = "thread" + str(i)
-      thread = Thread(target=htmlDownloader, kwargs={"link_list" : link_list, "html_doc_name_list" : html_doc_name_list, "link_check_list" : link_check_list})
+      thread = Thread(target=htmlDownloader, args=(link_list, html_doc_name_list,  link_check_list))
       thread.start()
 
   relevant_data = {"listLength": len(link_list), "redirectCounter": len(redirect_list), "redirectLinks": redirect_list, "allLinks": link_list}
@@ -258,7 +256,7 @@ if __name__ == "__main__":
   max_links = int(input("Maximum links: "))                                 #Insert an integer value (If you insert a 0 the number of maximum links is unlimited)
   get_link_to_files = input("Do you want to get links to files?: ")         #Insert Yes / No
   html_download = input("Do you want to download the html file?: ")         #Insert Yes / No
-  directory = r""                                                           #Insert the directory you want the html files in
+  directory = r""                                #Insert the directory you want the html files in
 
 
   if get_link_to_files.lower() == "yes":
