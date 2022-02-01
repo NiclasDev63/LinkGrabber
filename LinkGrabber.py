@@ -4,7 +4,7 @@ from collections import deque
 import time
 from random import choice
 from random import randint
-import os
+from os import path
 from pathvalidate import sanitize_filepath
 
 #returns different headers by randomly choosing an User Agent
@@ -152,7 +152,7 @@ def htmlDownloader(link_list):
     soup = BeautifulSoup(html_doc, "html.parser")
     html_doc_name = soup.title.string.strip()
     if html_doc_name not in html_doc_name_list:
-      with open(directory + os.path.sep + sanitize_filepath(html_doc_name) + ".txt", "w", encoding="utf-8")as file:
+      with open(directory + path.sep + sanitize_filepath(html_doc_name) + ".txt", "w", encoding="utf-8")as file:
         file.write(html_doc)
       html_doc_name_list.append(html_doc_name)
 
@@ -206,12 +206,12 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
                         if start_url not in href:
                           redirect_list.add(href)
                           continue
-                        #print(str(" " * depth) + f" at deepth: {depth} URL: {href}")
+                        print(str(" " * depth) + f" at deepth: {depth} URL: {href}")
                         link_list.add(href)
                         queue.append([href, "", depth + 1])
                         
                       else:
-                        #print(str(" " * depth) + f" at deepth: {depth} URL: {base + href}")               
+                        print(str(" " * depth) + f" at deepth: {depth} URL: {base + href}")               
                         link_list.add(base + href)
                         queue.append([base, href, depth + 1])
 
