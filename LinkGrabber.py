@@ -4,7 +4,8 @@ from collections import deque
 import time
 from random import choice
 from random import randint
-from os import path
+import os
+from pathvalidate import sanitize_filepath
 
 #returns different headers by randomly choosing an User Agent
 def randomHeader():
@@ -144,24 +145,16 @@ def randomHeader():
 
 
 #Downloads the HTML file into the wanted directory
-def htmlDownloader(directory, html_doc, html_doc_name):
-  #List of characters you aren`t allowed to use in the file name on Windows OS
-  forbidden_chars = ["<", ">", ":", "/", "|", "?" ,"*", ";", ",", "[", "]", "*", "+"]
-
-  new_html_doc_name = html_doc_name
-  for i in range(len(html_doc_name)):
-      if html_doc_name[i] in forbidden_chars:
-          new_html_doc_name = html_doc_name.replace(html_doc_name[i], "")
-  if "\n" in new_html_doc_name:
-          new_html_doc_name = new_html_doc_name.replace("\n", "")
-  try:
-    with open(directory + path.sep + new_html_doc_name + ".txt", "w", encoding="utf-8")as file:
+def htmlDownloader(link_list):
+  html_doc_name_list = []
+  for link in link_list:
+    html_doc = requests.get(link, headers = randomHeader()).text
+    soup = BeautifulSoup(html_doc, "html.parser")
+    html_doc_name = soup.title.string.strip()
+    if html_doc_name not in html_doc_name_list:
+      with open(directory + os.path.sep + sanitize_filepath(html_doc_name) + ".txt", "w", encoding="utf-8")as file:
         file.write(str(html_doc))
-  except Exception as e:
-    with open(directory + path.sep + str(randint(0,99999999)) + ".txt", "w", encoding="utf-8")as file:
-        file.write(str(html_doc))
-    print("The name is not allowed, so a random one was generated")
-
+      html_doc_name_list.append(html_doc_name)
 
 
 """
@@ -227,14 +220,7 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
               pass
 
   if html_download:
-    html_doc_name_list = []
-    for link in link_list:
-      html_doc = requests.get(link, headers = randomHeader()).text
-      soup = BeautifulSoup(html_doc, "html.parser")
-      html_doc_name = soup.title.string.strip()
-      if html_doc_name not in html_doc_name_list:
-        htmlDownloader(directory, html_doc, html_doc_name)
-        html_doc_name_list.append(html_doc_name)
+    htmlDownloader(link_list)
 
   relevant_data = {"listLength": len(link_list), "redirectCounter": len(redirect_list), "redirectLinks": redirect_list, "allLinks": link_list}
 
