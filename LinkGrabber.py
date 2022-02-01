@@ -264,7 +264,7 @@ if __name__ == "__main__":
   max_links = int(input("Maximum links: "))                                 #Insert an integer value (If you insert a 0 the number of maximum links is unlimited)
   get_link_to_files = input("Do you want to get links to files?: ")         #Insert Yes / No
   html_download = input("Do you want to download the html file?: ")         #Insert Yes / No
-  directory = r"C:\Users\nicla\Desktop\TEST"                                #Insert the directory you want the html files in
+  directory = r""                                #Insert the directory you want the html files in
 
 
   if get_link_to_files.lower() == "yes":
