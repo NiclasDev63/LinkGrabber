@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from collections import deque
 import time
 from random import choice
+from random import randint
 from os import path
 
 #returns different headers by randomly choosing an User Agent
@@ -143,26 +144,23 @@ def randomHeader():
 
 
 #Downloads the HTML file into the wanted directory
-def htmlDownloader(directory, link):
+def htmlDownloader(directory, html_doc, html_doc_name):
+  #List of characters you aren`t allowed to use in the file name on Windows OS
+  forbidden_chars = ["<", ">", ":", "/", "|", "?" ,"*", ";", ",", "[", "]", "*", "+"]
+
+  new_html_doc_name = html_doc_name
+  for i in range(len(html_doc_name)):
+      if html_doc_name[i] in forbidden_chars:
+          new_html_doc_name = html_doc_name.replace(html_doc_name[i], "")
+  if "\n" in new_html_doc_name:
+          new_html_doc_name = new_html_doc_name.replace("\n", "")
   try:
-    html_doc = requests.get(link, headers = randomHeader()).text
-    soup = BeautifulSoup(html_doc, "html.parser")
-    html_doc_name = soup.title.string.strip()
-
-    #List of characters you aren`t allowed to use in the file name on Windows OS
-    forbidden_chars = ["<", ">", ":", "/", "|", "?" ,"*", ";", ",", "[", "]", "*", "+"]
-
-    new_html_doc_name = html_doc_name
-    for i in range(len(html_doc_name)):
-        if html_doc_name[i] in forbidden_chars:
-            new_html_doc_name = html_doc_name.replace(html_doc_name[i], "")
-    if "\n" in new_html_doc_name:
-            new_html_doc_name = new_html_doc_name.replace("\n", "")
     with open(directory + path.sep + new_html_doc_name + ".txt", "w", encoding="utf-8")as file:
         file.write(str(html_doc))
   except Exception as e:
-    print("Html file could not be downloaded")
-    print(e)
+    with open(directory + path.sep + str(randint(0,99999999)) + ".txt", "w", encoding="utf-8")as file:
+        file.write(str(html_doc))
+    print("The name is not allowed, so a random one was generated")
 
 
 
@@ -212,24 +210,31 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
 
 
                       if href.startswith("http") or href.startswith("www"):
-                        link_list.add(href)
-                        print(str(" " * depth) + f" at deepth: {depth} URL: {href}")
                         if start_url not in href:
                           redirect_list.add(href)
                           continue
-                        if html_download:
-                          htmlDownloader(directory, href)
+                        print(str(" " * depth) + f" at deepth: {depth} URL: {href}")
+                        link_list.add(href)
                         queue.append([href, "", depth + 1])
+                        
                       else:
                         print(str(" " * depth) + f" at deepth: {depth} URL: {base + href}")               
-                        if html_download:
-                          htmlDownloader(directory, base + href)
                         link_list.add(base + href)
                         queue.append([base, href, depth + 1])
 
           except Exception as e:
               print(e)
               pass
+
+  if html_download:
+    html_doc_name_list = []
+    for link in link_list:
+      html_doc = requests.get(link, headers = randomHeader()).text
+      soup = BeautifulSoup(html_doc, "html.parser")
+      html_doc_name = soup.title.string.strip()
+      if html_doc_name not in html_doc_name_list:
+        htmlDownloader(directory, html_doc, html_doc_name)
+        html_doc_name_list.append(html_doc_name)
 
   relevant_data = {"listLength": len(link_list), "redirectCounter": len(redirect_list), "redirectLinks": redirect_list, "allLinks": link_list}
 
@@ -259,7 +264,7 @@ if __name__ == "__main__":
   max_links = int(input("Maximum links: "))                                 #Insert an integer value (If you insert a 0 the number of maximum links is unlimited)
   get_link_to_files = input("Do you want to get links to files?: ")         #Insert Yes / No
   html_download = input("Do you want to download the html file?: ")         #Insert Yes / No
-  directory = r""                                                           #Insert the directory you want the html files in
+  directory = r"C:\Users\nicla\Desktop\TEST"                                #Insert the directory you want the html files in
 
 
   if get_link_to_files.lower() == "yes":
