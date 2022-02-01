@@ -6,6 +6,7 @@ from random import choice
 from random import randint
 from os import path
 from pathvalidate import sanitize_filepath
+from threading import Thread
 
 #returns different headers by randomly choosing an User Agent
 def randomHeader():
@@ -145,22 +146,23 @@ def randomHeader():
 
 
 #Downloads the HTML file into the wanted directory
-def htmlDownloader(link_list):
-  html_doc_name_list = []
+def htmlDownloader(link_list, html_doc_name_list, link_check_list):
   for link in link_list:
-    html_doc = requests.get(link, headers = randomHeader()).text
-    soup = BeautifulSoup(html_doc, "html.parser")
-    html_doc_name = soup.title.string.strip()
-    if html_doc_name not in html_doc_name_list:
-      with open(directory + path.sep + sanitize_filepath(html_doc_name) + ".txt", "w", encoding="utf-8")as file:
-        file.write(html_doc)
-      html_doc_name_list.append(html_doc_name)
+    if link not in link_check_list:
+      link_check_list.append(link)
+      html_doc = requests.get(link, headers = randomHeader()).text
+      soup = BeautifulSoup(html_doc, "html.parser")
+      html_doc_name = soup.title.string.strip()
+      if html_doc_name not in html_doc_name_list:
+        with open(directory + path.sep + sanitize_filepath(html_doc_name) + ".txt", "w", encoding="utf-8")as file:
+          file.write(html_doc)
+        html_doc_name_list.append(html_doc_name)
 
 
 """
 Uses BFS to find all links on the Website.
 """
-def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download = False, directory = "", get_link_to_files = False):
+def breadthFirstSearch(start_url, threads, max_depth = 2, max_links = -1, html_download = False, directory = "", get_link_to_files = False):
 
 
   redirect_list = set()
@@ -220,7 +222,12 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
               pass
 
   if html_download:
-    htmlDownloader(link_list)
+    html_doc_name_list = []
+    link_check_list = []
+    for i in range(threads):
+      thread = "thread" + str(i)
+      thread = Thread(target=htmlDownloader, kwargs={"link_list" : link_list, "html_doc_name_list" : html_doc_name_list, "link_check_list" : link_check_list})
+      thread.start()
 
   relevant_data = {"listLength": len(link_list), "redirectCounter": len(redirect_list), "redirectLinks": redirect_list, "allLinks": link_list}
 
@@ -246,11 +253,12 @@ if __name__ == "__main__":
   #You have a few parameters to customize your link search
 
   start_url = input("Start URL: ")                                          #Insert an root url to start with
+  threads = int(input("Wanted Threads: "))                                  #Inser an interger value
   max_deepth = int(input("Maximum depth: "))                                #Insert an interger value
   max_links = int(input("Maximum links: "))                                 #Insert an integer value (If you insert a 0 the number of maximum links is unlimited)
   get_link_to_files = input("Do you want to get links to files?: ")         #Insert Yes / No
   html_download = input("Do you want to download the html file?: ")         #Insert Yes / No
-  directory = r""                                #Insert the directory you want the html files in
+  directory = r""                                                           #Insert the directory you want the html files in
 
 
   if get_link_to_files.lower() == "yes":
@@ -264,7 +272,5 @@ if __name__ == "__main__":
     html_download = False
 
 
-  start = time.time()
-  data_dic = breadthFirstSearch(start_url, max_deepth, max_links, html_download, directory, get_link_to_files)
-  end = time.time()
-  print(f"Time needed to extract the links: {end-start} ")
+
+  data_dic = breadthFirstSearch(start_url, threads, max_deepth, max_links, html_download, directory, get_link_to_files)
