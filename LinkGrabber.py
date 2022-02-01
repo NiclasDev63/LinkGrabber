@@ -3,8 +3,7 @@ from bs4 import BeautifulSoup
 from collections import deque
 import time
 from random import choice
-import os
-
+from os import path
 
 #returns different headers by randomly choosing an User Agent
 def randomHeader():
@@ -159,7 +158,7 @@ def htmlDownloader(directory, link):
             new_html_doc_name = html_doc_name.replace(html_doc_name[i], "")
     if "\n" in new_html_doc_name:
             new_html_doc_name = new_html_doc_name.replace("\n", "")
-    with open(directory + os.path.sep + new_html_doc_name + ".txt", "w", encoding="utf-8")as file:
+    with open(directory + path.sep + new_html_doc_name + ".txt", "w", encoding="utf-8")as file:
         file.write(str(html_doc))
   except Exception as e:
     print("Html file could not be downloaded")
@@ -173,12 +172,12 @@ Uses BFS to find all links on the Website.
 def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download = False, directory = "", get_link_to_files = False):
 
 
-  redirect_list = []
+  redirect_list = set()
   file_endings = ["jpg", "pdf", "JPG", "jpeg", "png", "mp3", "docx", "mp4"]
-  visited = [start_url]
+  visited = set(start_url)
   queue = deque([[start_url, "", 0]])
   want_all_links = False
-  link_list = []
+  link_list = set()
 
   if max_links > 0:
     want_all_links = True
@@ -196,7 +195,7 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
               for link in soup.find_all("a"):
                   href = link.get("href")
                   if href not in visited:
-                      visited.append(href)
+                      visited.add(href)
 
                       if max_links == len(link_list) and want_all_links:
                           stop = True
@@ -211,21 +210,21 @@ def breadthFirstSearch(start_url, max_depth = 2, max_links = -1, html_download =
                         except IndexError:
                           pass
 
-                      
+
                       if href.startswith("http") or href.startswith("www"):
-                        link_list.append(href)
+                        link_list.add(href)
                         print(str(" " * depth) + f" at deepth: {depth} URL: {href}")
+                        if start_url not in href:
+                          redirect_list.add(href)
+                          continue
                         if html_download:
                           htmlDownloader(directory, href)
-                        if start_url not in href:
-                          redirect_list.append(href)
-                          continue
                         queue.append([href, "", depth + 1])
                       else:
                         print(str(" " * depth) + f" at deepth: {depth} URL: {base + href}")               
                         if html_download:
                           htmlDownloader(directory, base + href)
-                        link_list.append(base + href)
+                        link_list.add(base + href)
                         queue.append([base, href, depth + 1])
 
           except Exception as e:
